@@ -5,15 +5,28 @@ import {connect} from 'react-redux';
 
 import {setUserName} from '../redux/actions/userActions';
 
+import {setTeachers} from '../redux/actions/teachersActions';
+import {setStudents} from '../redux/actions/studentsActions';
+import {setClasses} from '../redux/actions/classesActions';
+
+import Column from './Column';
+
+
 const mapStateToProps = (store) => {
     return {
         userName: store.userReducer.userName,
+        teachers: store.teachersReducer.teachers,
+        classes: store.classesReducers.classes,
+        students: store.studentsReducer.students
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        setUserName: (name) => dispatch(setUserName(name))
+        setUserName: (name) => dispatch(setUserName(name)),
+        setTeachers: (list) => dispatch(setTeachers(list)),
+        setStudents: (list) => dispatch(setStudents(list)),
+        setClasses: (list) => dispatch(setClasses(list))
     };
 };
 
@@ -23,10 +36,7 @@ class App extends Component{
     constructor(){
         super();
         this.state = {
-            user: null,
-            fetching: null,
-            fetched: false,
-            error: false,
+            selectedTeachers: []
         };
     };
 
@@ -38,7 +48,27 @@ class App extends Component{
     componentDidMount = () => {
         fetch('http://localhost:3000/')
             .then(response => response.json())
-            .then(user => this.setState({user: user.user}))
+            .then(obj => {
+                let teachers = obj.teachers.map((teacherObj) => {
+                    return teacherObj.teacher_id;
+                });
+                let students = obj.students.map((studentObj) => {
+                    return studentObj.student_id;
+                });
+                let classes = obj.classes.map((classObj) => {
+                    return classObj.class_id;
+                });
+                console.log(teachers, classes,students)
+                this.props.setTeachers(teachers);
+                this.props.setStudents(students);
+                this.props.setClasses(classes);
+                // this.setState({
+                //     teachers: teachers,
+                //     students: students,
+                //     classes: classes
+                // })
+            }
+        );
 
 
             // To use async/await in componentDidMount, download @babel/plugin-transform-runtime and @babel/runtime
@@ -51,10 +81,10 @@ class App extends Component{
     render(){
         return(
             <div id="container-app">
-                <h1>Hello World!</h1>
-                {this.state.user}
-                {this.props.userName}
-                <button onClick={()=>{this.onPress()}}>Click</button>
+                {/* <button onClick={()=>{this.onPress()}}>Click</button> */}
+                <Column title={"Teachers"} data={this.props.teachers} teacher={true}/>
+                <Column title={"Classes"} data = {this.props.classes}/>
+                <Column title={"Students"} data={this.props.students}/>
             </div>
         );
     };
