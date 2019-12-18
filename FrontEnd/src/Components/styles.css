@@ -1,5 +1,5 @@
 #container-app{
-    color: pink;
+    color: navy;
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;

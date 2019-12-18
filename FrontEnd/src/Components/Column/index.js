@@ -21,6 +21,9 @@ class Column extends Component{
 
     showData = (dataList) =>{
         let components = dataList.map((id, i) => {
+            if(this.props.teacher){
+                return <ColumnItem name={id} key={i} teacher={true} onTeacherClick={this.props.onTeacherClick}/>
+            };
             return <ColumnItem name={id} key={i}/>;
         });
         return components;

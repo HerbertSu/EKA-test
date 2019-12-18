@@ -36,8 +36,47 @@ class App extends Component{
     constructor(){
         super();
         this.state = {
-            selectedTeachers: []
+            selectedTeachers: [],
+            selectedClassesAndStudents: []
         };
+    };
+
+    onTeacherClick = async (id) =>{
+        // If selected teacher is already in list,
+        if(this.state.selectedTeachers.includes(id)){
+            for(let i = 0; i < this.state.selectedTeachers.length; i++){
+                let copy = this.state.selectedTeachers;
+                let index = copy.indexOf(id);
+                if (index > -1) {
+                    copy.splice(index, 1);
+                };
+                this.setState({selectedTeachers : copy});
+            };
+        }else{
+            let copy = this.state.selectedTeachers.push(id);
+            this.setState({
+                selectedTeachers: copy
+            })
+            let res = await fetch('http://localhost:3000/getStudentsGivenTeaacher', {
+                method : 'POST',
+                    body : JSON.stringify({
+                        teacher_id : id
+                    }),
+                    headers : {
+                        'Content-Type' : 'application/json'
+                    }
+                });
+            let classes = await res.json();
+            console.log("CLASS and Students", classes)
+        };
+    };
+
+    setSelectedTeachers = (teachers) => {
+        this.setState({selectedTeachers: teachers})
+    };
+    
+    setSelectedClassesAndStudents = (cAndS) => {
+        this.setState({ selectedClassesAndStudents: cAndS});
     };
 
     onPress = () => {
@@ -82,7 +121,7 @@ class App extends Component{
         return(
             <div id="container-app">
                 {/* <button onClick={()=>{this.onPress()}}>Click</button> */}
-                <Column title={"Teachers"} data={this.props.teachers} teacher={true}/>
+                <Column title={"Teachers"} data={this.props.teachers} teacher={true} onTeacherClick={this.onTeacherClick}/>
                 <Column title={"Classes"} data = {this.props.classes}/>
                 <Column title={"Students"} data={this.props.students}/>
             </div>

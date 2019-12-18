@@ -34,14 +34,15 @@ app.get('/', async (request, response) => {
     });
 });
 
-app.get('/getStudentsGivenTeaacher', async (request, response) => {
+app.post('/getStudentsGivenTeaacher', async (request, response) => {
     let teacher_id = request.body.teacher_id;
+    console.log(teacher_id)
     let res = await postgres('classes')
         .select('class_id', 'student_id')
         .where({
             teacher_id : teacher_id
         });
-    response.send(res)
+    response.send(res);
 })
 
 app.listen(PORT, () =>{
