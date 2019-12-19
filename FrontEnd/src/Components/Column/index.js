@@ -20,11 +20,11 @@ class Column extends Component{
     };
 
     showData = (dataList) =>{
-        let components = dataList.map((id, i) => {
+        let components = dataList.map((obj, i) => {
             if(this.props.teacher){
-                return <ColumnItem name={id} key={i} teacher={true} onTeacherClick={this.props.onTeacherClick}/>
+                return <ColumnItem name={obj.id} key={i} backgroundColor={obj.color} teacher={true} onTeacherClick={this.props.onTeacherClick}/>
             };
-            return <ColumnItem name={id} key={i}/>;
+            return <ColumnItem name={obj.id} key={i} backgroundColor={obj.color}/>;
         });
         return components;
     };

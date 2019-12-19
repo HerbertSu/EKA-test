@@ -36,12 +36,22 @@ app.get('/', async (request, response) => {
 
 app.post('/getStudentsGivenTeaacher', async (request, response) => {
     let teacher_id = request.body.teacher_id;
-    console.log(teacher_id)
-    let res = await postgres('classes')
-        .select('class_id', 'student_id')
+
+    let classes = await postgres('classes')
+        .distinct('class_id')
         .where({
             teacher_id : teacher_id
         });
+    let students = await postgres('classes')
+        .distinct('student_id')
+        .where({
+            teacher_id : teacher_id
+        });
+    let res = {
+        classes : classes,
+        students : students,
+    };
+    
     response.send(res);
 })
 

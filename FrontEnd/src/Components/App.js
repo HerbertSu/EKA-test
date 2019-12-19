@@ -11,6 +11,8 @@ import {setClasses} from '../redux/actions/classesActions';
 
 import Column from './Column';
 
+import {contains} from '../lib/arrayOfObjects';
+
 
 const mapStateToProps = (store) => {
     return {
@@ -37,11 +39,12 @@ class App extends Component{
         super();
         this.state = {
             selectedTeachers: [],
-            selectedClassesAndStudents: []
+            selectedClasses: [],
+            selectedStudents: []
         };
     };
 
-    onTeacherClick = async (id) =>{
+    onTeacherClick = async (id) => {
         // If selected teacher is already in list,
         if(this.state.selectedTeachers.includes(id)){
             for(let i = 0; i < this.state.selectedTeachers.length; i++){
@@ -52,11 +55,63 @@ class App extends Component{
                 };
                 this.setState({selectedTeachers : copy});
             };
+
+            let copyTeachers = [...this.props.teachers];
+            let copyStudents = [...this.props.students];
+            let copyClasses = [...this.props.classes];
+
+            let tIndex = contains(id, copyTeachers);
+            copyTeachers[tIndex].color = null;
+
+            let copySelectedClasses = [...this.state.selectedClasses];
+            let copySelectedStudents = [...this.state.selectedStudents];
+
+            let cI = contains(id, copySelectedClasses);
+
+            if(cI != null){
+                let selectedClassesForId = copySelectedClasses[cI].selectedClasses;
+                for(let i = 0; i < selectedClassesForId.length; i++){
+                    let classSelected = selectedClassesForId[i].class_id;
+                    let cIndex = contains(classSelected, copyClasses);
+
+                    if(cIndex != null){
+                        copyClasses[cIndex].color = null;
+                    };
+                };
+                copySelectedClasses.slice(cI,1);
+            };
+
+            let sI = contains(id, copySelectedStudents);
+            if(sI != null){
+                let selectedStudentsForId = copySelectedStudents[sI].selectedStudents;
+                for(let i = 0; i < selectedStudentsForId.length; i++){
+                    let studentSelected = selectedStudentsForId[i].student_id;
+                    let sIndex = contains(studentSelected, copyStudents);
+                    if(sIndex != null){
+                        copyStudents[sIndex].color = null;
+                    };
+                };
+                copySelectedStudents.slice(sI, 1);
+            };
+            
+            this.props.setClasses(copyClasses);
+            this.props.setTeachers(copyTeachers);
+            this.props.setStudents(copyStudents);
+
+            this.setState({
+                selectedClasses: copySelectedClasses,
+                selectedStudents: copySelectedStudents
+            });
+
         }else{
-            let copy = this.state.selectedTeachers.push(id);
+            let copy = this.state.selectedTeachers;
+            copy.push(id);
             this.setState({
                 selectedTeachers: copy
-            })
+            });
+            
+            let randomColor = "#000000".replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+
             let res = await fetch('http://localhost:3000/getStudentsGivenTeaacher', {
                 method : 'POST',
                     body : JSON.stringify({
@@ -66,8 +121,51 @@ class App extends Component{
                         'Content-Type' : 'application/json'
                     }
                 });
-            let classes = await res.json();
-            console.log("CLASS and Students", classes)
+            let classAndStudents = await res.json();
+
+            let copyTeachers = [...this.props.teachers];
+            let copyStudents = [...this.props.students];
+            let copyClasses = [...this.props.classes];
+
+            let tIndex = contains(id, copyTeachers);
+            copyTeachers[tIndex].color = randomColor;
+
+            for(let i = 0; i < classAndStudents.classes.length; i++){
+                let id = classAndStudents.classes[i].class_id;
+                let cIndex = contains(id, copyClasses);
+                if(cIndex !== null){
+                    copyClasses[cIndex].color = randomColor;
+                };
+            };
+            
+            for(let i = 0; i < classAndStudents.students.length; i++){
+                let id = classAndStudents.students[i].student_id;
+                let sIndex = contains(id, copyStudents);
+                if(sIndex !== null){
+                    copyStudents[sIndex].color = randomColor;
+                };
+            };
+            
+            this.props.setClasses(copyClasses);
+            this.props.setTeachers(copyTeachers);
+            this.props.setStudents(copyStudents);
+
+            let selectedClasses = [...this.state.selectedClasses];
+            selectedClasses.push({
+                id: id,
+                selectedClasses : classAndStudents.classes
+            });
+
+            let selectedStudents = [...this.state.selectedStudents];
+            selectedStudents.push({
+                id: id,
+                selectedStudents : classAndStudents.students
+            });
+            
+            this.setState({
+                selectedClasses: selectedClasses,
+                selectedStudents: selectedStudents
+            });
         };
     };
 
@@ -88,24 +186,35 @@ class App extends Component{
         fetch('http://localhost:3000/')
             .then(response => response.json())
             .then(obj => {
-                let teachers = obj.teachers.map((teacherObj) => {
-                    return teacherObj.teacher_id;
-                });
-                let students = obj.students.map((studentObj) => {
-                    return studentObj.student_id;
-                });
-                let classes = obj.classes.map((classObj) => {
-                    return classObj.class_id;
-                });
+                let teachers = [];
+                let students = [];
+                let classes = [];
+
+                for(let i = 0; i < obj.teachers.length; i++){
+                    teachers.push({
+                        id: obj.teachers[i].teacher_id,
+                        color: null
+                    });
+                };
+
+                for(let i = 0; i < obj.students.length; i++){
+                    students.push({
+                        id: obj.students[i].student_id,
+                        color: null
+                    });
+                };
+
+                for(let i = 0; i < obj.classes.length; i++){
+                    classes.push({
+                        id: obj.classes[i].class_id,
+                        color: null
+                    });
+                };
+
                 console.log(teachers, classes,students)
                 this.props.setTeachers(teachers);
                 this.props.setStudents(students);
                 this.props.setClasses(classes);
-                // this.setState({
-                //     teachers: teachers,
-                //     students: students,
-                //     classes: classes
-                // })
             }
         );
 

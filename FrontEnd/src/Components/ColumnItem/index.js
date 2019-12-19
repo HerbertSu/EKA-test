@@ -25,14 +25,27 @@ class ColumnItem extends Component{
     render(){
         return(
             (this.props.teacher === true ? (
-              <div className="teacher" onClick={()=>this.onClickTeacher()}>
-                  {this.props.name}
-              </div>  
+                this.props.backgroundColor !== null ? (
+                    <div className="teacher" style={{backgroundColor : `${this.props.backgroundColor}`}} onClick={()=>this.onClickTeacher(this.props.name)}>
+                        {this.props.name}
+                    </div>
+                ) : (
+                    <div className="teacher" onClick={()=>this.onClickTeacher(this.props.name)}>
+                        {this.props.name}
+                    </div>
+                )
             ) : (
-                <div className="notTeacher">
-                    {this.props.name}
-                </div>
-            ))
+                this.props.backgroundColor !== null ? (
+                    <div className="notTeacher" style={{backgroundColor : `${this.props.backgroundColor}`}}>
+                        {this.props.name}
+                    </div>
+                ) : (
+                    <div className="notTeacher">
+                        {this.props.name}
+                    </div>
+                )
+            )
+            )                
         )
     }
 };
